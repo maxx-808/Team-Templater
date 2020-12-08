@@ -13,73 +13,76 @@ const Employee = require("./lib/Employee");
 
 // Write code to use inquirer to gather information about the development team members,
 // and to create objects for each team member (using the correct classes as blueprints!)
-function newEmployeePrompt() {
-  inquirer
-    .prompt([
-      {
-        type: "list",
-        message: "Enter employee role",
-        name: "roleInput",
-        choices: ["Manager", "Engineer", "Intern"],
-      },
-    ])
-    .then((res) => {
-      console.log(res);
-      if (res.roleInput === "Manager") {
-        managerPrompt();
-      }
-    });
-}
+const employees = [];
 
-function moreEmployees() {
-  inquirer
-    .prompt([
-      {
-        type: "confirm",
-        message: "Are there more employees? ",
-        name: "moreInput",
-      },
-    ])
-    .then((moreRes) => {
-      if ((moreRes = true)) {
-        newEmployeePrompt();
-      }
-    });
-}
-
-newEmployeePrompt();
-
-function managerPrompt() {
+function addMember() {
   inquirer
     .prompt([
       {
         type: "input",
         message: "Enter employee name",
-        name: "nameInput",
+        name: "name"
+      }
+      {
+        type: "list",
+        message: "Enter employee role",
+        name: "role",
+        choices: ["Manager", "Engineer", "Intern"],
       },
       {
         type: "input",
         message: "Enter employee ID #",
-        name: "idInput",
+        name: "id",
       },
       {
         type: "input",
         message: "Enter employee email",
-        name: "emailInput",
-      },
-      {
-        type: "input",
-        message: "Enter employee Office #",
-        name: "officenumInput",
+        name: "email",
       },
     ])
-    .then((manRes) => {
-      console.log(manRes);
-      moreEmployees();
+    .then(function({name, role, id, email}) {
+      let roleInfo = "";
+      if(role === "Manager") {
+        roleInfo = "office number"
+      } else if (role === "Engineer"){
+        roleInfo = "github username"
+      } else{
+        roleInfo = "school name"
+      };
+      inquirer.prompt([{
+        message: `enter employees ${roleInfo}`,
+        name: "roleInfo"
+      },
+      {
+        type: "list",
+        message: "Would you like to add more team members?",
+        choices: [ "yes", "no"],
+        name: "moreMembers"
+      }])
+      .then(function({roleInfo, moreMembers}) {
+        let newMember;
+        if (role === "Manager") {
+          newMember = new Manager(name, id, email, roleInfo);
+        } else if (role === "Engineer") {
+          newMember = new Engineer(name, id, email, roleInfo)
+        } else {
+          newMember = new Intern(name, id, email, roleInfo)
+        }
+        employees.push(newMember);
+        addHtml(newMember)
+        .then(function() {
+          if (moreMembers === "yes") {
+            addMember();
+          } else {
+            finishHtml();
+          }
+        })
+      })
     });
 }
 
-render();
+addMember();
+
 // After the user has input all employees desired, call the `render` function (required
 // above) and pass in an array containing all employee objects; the `render` function will
 // generate and return a block of HTML including templated divs for each employee!
