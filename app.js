@@ -42,6 +42,14 @@ function addMember() {
         type: "input",
         message: "Enter employee ID #",
         name: "id",
+        validate: (answer) => {
+          const numbers = answer.match(/^[0-9]\d*$/);
+          if (numbers && answer.length > 3) {
+            return true;
+          } else {
+            return "please enter an ID #: must be 4 or more numbers long and be only numbers";
+          }
+        },
       },
       {
         type: "input",
