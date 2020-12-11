@@ -10,6 +10,7 @@ const outputPath = path.join(OUTPUT_DIR, "team.html");
 
 const render = require("./lib/htmlRenderer");
 const Employee = require("./lib/Employee");
+const { create } = require("domain");
 
 // Write code to use inquirer to gather information about the development team members,
 // and to create objects for each team member (using the correct classes as blueprints!)
@@ -21,8 +22,16 @@ function addMember() {
       {
         type: "input",
         message: "Enter employee name",
-        name: "name"
-      }
+        name: "name",
+        validate: (answer) => {
+          const numbers = answer.match(/^[0-9]\d*$/);
+          if (!numbers && answer !== "" && answer.length > 1) {
+            return true;
+          } else {
+            return "please enter a valid name";
+          }
+        },
+      },
       {
         type: "list",
         message: "Enter employee role",
@@ -40,45 +49,58 @@ function addMember() {
         name: "email",
       },
     ])
-    .then(function({name, role, id, email}) {
+    .then(function ({ name, role, id, email }) {
       let roleInfo = "";
-      if(role === "Manager") {
-        roleInfo = "office number"
-      } else if (role === "Engineer"){
-        roleInfo = "github username"
-      } else{
-        roleInfo = "school name"
-      };
-      inquirer.prompt([{
-        message: `enter employees ${roleInfo}`,
-        name: "roleInfo"
-      },
-      {
-        type: "list",
-        message: "Would you like to add more team members?",
-        choices: [ "yes", "no"],
-        name: "moreMembers"
-      }])
-      .then(function({roleInfo, moreMembers}) {
-        let newMember;
-        if (role === "Manager") {
-          newMember = new Manager(name, id, email, roleInfo);
-        } else if (role === "Engineer") {
-          newMember = new Engineer(name, id, email, roleInfo)
-        } else {
-          newMember = new Intern(name, id, email, roleInfo)
-        }
-        employees.push(newMember);
-        addHtml(newMember)
-        .then(function() {
+      if (role === "Manager") {
+        roleInfo = "office number";
+      } else if (role === "Engineer") {
+        roleInfo = "github username";
+      } else {
+        roleInfo = "school name";
+      }
+      inquirer
+        .prompt([
+          {
+            message: `enter employees ${roleInfo}`,
+            name: "roleInfo",
+          },
+          {
+            type: "list",
+            message: "Would you like to add more team members?",
+            choices: ["yes", "no"],
+            name: "moreMembers",
+          },
+        ])
+        .then(function ({ roleInfo, moreMembers }) {
+          let newMember;
+          if (role === "Manager") {
+            newMember = new Manager(name, id, email, roleInfo);
+          } else if (role === "Engineer") {
+            newMember = new Engineer(name, id, email, roleInfo);
+          } else {
+            newMember = new Intern(name, id, email, roleInfo);
+          }
+          employees.push(newMember);
+          console.log(employees);
+
+          // addHtml(newMember).then(function () {
+          //   if (moreMembers === "yes") {
+          //     addMember();
+          //   } else {
+          //     finishHtml();
+          //   }
+          // });
+
           if (moreMembers === "yes") {
             addMember();
           } else {
-            finishHtml();
+            createEmployees();
           }
-        })
-      })
+        });
     });
+  function createEmployees() {
+    fs.writeFileSync(outputPath, render(employees), "utf-8");
+  }
 }
 
 addMember();

@@ -1,0 +1,23 @@
+body {
+  background-color: darkgrey;
+  font-style: italic;
+}
+
+.employee-card {
+  background-color: white;
+  margin: 10px;
+}
+
+.list-group-item {
+  background-color: purple;
+  color: white;
+}
+
+.team-heading {
+  background-color: purple;
+}
+
+.text-center {
+  size: 45px;
+  color: white;
+}
